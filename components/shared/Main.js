@@ -81,7 +81,7 @@ const result = {
 };
 
 // Usage in your Home component
-async function Home({ searchParams }) {
+function Home({ searchParams }) {
   // Replace fetchPosts with the mock data
   const result = {
     posts: samplePosts,
@@ -101,7 +101,7 @@ async function Home({ searchParams }) {
               <ThreadCard
                 key={post._id}
                 id={post._id}
-                currentUserId={1} 
+                currentUserId={1}
                 parentId={post.parentId}
                 content={post.text}
                 author={post.author}
@@ -113,12 +113,12 @@ async function Home({ searchParams }) {
           </>
         )}
       </section>
-
+      {/* 
       <Pagination
         path="/"
         pageNumber={searchParams?.page ? +searchParams.page : 1}
         isNext={result.isNext}
-      />
+      /> */}
     </>
   );
 }

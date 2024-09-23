@@ -1,32 +1,19 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
-
 import { sidebarLinks } from "@/global/sidebar_links";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
-const LeftSidebar = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const { userId } = 1;
-
+const LeftSidebar = ({ setCurrentView, currentView }) => {
   return (
     <section className="custom-scrollbar leftsidebar">
       <div className="flex w-full flex-1 flex-col gap-6 px-6">
         {sidebarLinks.map((link) => {
-          const isActive =
-            (pathname.includes(link.route) && link.route.length > 1) ||
-            pathname === link.route;
-
-          if (link.route === "/profile") link.route = `${link.route}/${userId}`;
+          const isActive = currentView === link.label;
 
           return (
-            <Link
-              href={link.route}
+            <button
               key={link.label}
-              className={`leftsidebar_link ${isActive && "bg-primary-500 "}`}
+              className={`leftsidebar_link ${isActive ? "bg-primary-500" : ""}`}
+              onClick={() => setCurrentView(link.label)}
             >
               <Image
                 src={link.imgURL}
@@ -34,28 +21,10 @@ const LeftSidebar = () => {
                 width={24}
                 height={24}
               />
-
               <p className="text-light-1 max-lg:hidden">{link.label}</p>
-            </Link>
+            </button>
           );
         })}
-      </div>
-
-      <div className="mt-10 px-6">
-        {/* <SignedIn>
-          <SignOutButton signOutCallback={() => router.push("/sign-in")}>
-            <div className='flex cursor-pointer gap-4 p-4'>
-              <Image
-                src='/assets/logout.svg'
-                alt='logout'
-                width={24}
-                height={24}
-              />
-
-              <p className='text-light-2 max-lg:hidden'>Logout</p>
-            </div>
-          </SignOutButton>
-        </SignedIn> */}
       </div>
     </section>
   );
