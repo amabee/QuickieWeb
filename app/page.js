@@ -1,14 +1,9 @@
-"use client";
-import Header from './components/header';
-import '../public/styles/style.css';
+import React from 'react'
 
-function MyApp({ Component, pageProps }) {
+const page = () => {
   return (
-    <>
-      <Header />
-      <Component {...pageProps} />
-    </>
-  );
+    <div>page</div>
+  )
 }
 
-export default MyApp;
+export default page

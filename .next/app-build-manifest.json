@@ -12,10 +12,11 @@
       "static/css/app/auth/login/page.css",
       "static/chunks/app/auth/login/page.js"
     ],
-    "/_not-found/page": [
+    "/auth/signup/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/css/app/auth/signup/page.css",
+      "static/chunks/app/auth/signup/page.js"
     ]
   }
 }
