@@ -1,5 +1,86 @@
 {
-  "node": {},
+  "node": {
+    "465c80147b753fc29a36d69582bdbba3bbf06815": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "4bd9de488c7b0da406121a02e14117be7d640124": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "6e5fd78941dc1104b691e332d95c0789d9ae787f": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "ad07d39fe38a1084bef80a9d592b3ec11875b134": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "b9b0a5f6a1812a9310ebc3a62f81d2ff659c9e9f": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "d5e0f13bfb7aeb1cec8ee92a24632097493084f8": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "ef1693a1997c5d453067eaa9d7ea8367322f894b": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    },
+    "ff7f75d2dc2a6a766d94e9c67290ddc0ec750ed5": {
+      "workers": {
+        "app/auth/login/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!",
+        "app/auth/signup/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CUser%5C%5CDocuments%5C%5CPROJECTS%5C%5CQuickieWeb%5C%5Clib%5C%5Clib.js%22%2C%5B%22decrypt%22%2C%22getSession%22%2C%22encrpyt%22%2C%22signup%22%2C%22updateSession%22%2C%22%24%24ACTION_0%22%2C%22login%22%2C%22logout%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/auth/login/page": "action-browser",
+        "app/auth/signup/page": "action-browser"
+      }
+    }
+  },
   "edge": {},
   "encryptionKey": "CRUcZK+2Eew2btvs6Kx/scD8wmH7Zt1aNiOoYLS84os="
 }
