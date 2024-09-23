@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import "../../../public/styles/tailwind.css";
 import toast, { Toaster } from "react-hot-toast";
+import { login } from "@/lib/lib";
 
 const LoginPage = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -18,15 +19,43 @@ const LoginPage = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    console.log("Login attempt with:", emailOrUsername, password);
-    toast.success("Login successful!");
+
+    if (emailOrUsername.length <= 0 || password.length <= 0) {
+      return toast.error("Email/Username Or Password is empty!", {
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    }
+
+    toast.promise(
+      (async () => {
+        const { success, message } = await login(emailOrUsername, password);
+        if (!success) {
+          throw new Error(message);
+        }
+        return message;
+      })(),
+      {
+        loading: "Logging in...",
+        success: async (message) => {
+          toast.success(message);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          window.location.href = "/";
+        },
+        error: (error) => error.message || "Login failed. Please try again.",
+      }
+    );
+
     setEmailOrUsername("");
     setPassword("");
   };
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-      <Toaster />
+      <Toaster  />
       <Card className="w-full max-w-md bg-gray-800 text-white">
         <CardHeader className="text-center">
           <div className="mx-auto w-20 h-20 mb-4">
@@ -76,7 +105,10 @@ const LoginPage = () => {
               </Button>
               <p className="text-sm text-gray-400 text-center">
                 Don't have an account?{" "}
-                <a href="/auth/signup" className="text-blue-400 hover:underline">
+                <a
+                  href="/auth/signup"
+                  className="text-blue-400 hover:underline"
+                >
                   Sign up
                 </a>
               </p>
