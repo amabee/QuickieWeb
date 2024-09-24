@@ -8,6 +8,10 @@ import LeftSidebar from "@/components/shared/LeftSidebar";
 import Bottombar from "@/components/shared/BottomBar";
 import Home from "@/components/shared/Main";
 import Search from "@/components/shared/SearchPage";
+import Activity from "@/components/pages/Activities";
+import Profile from "./profile/[id]/page";
+import QuickSnap from "@/components/pages/QuickSnap";
+import { UserProvider, useUser } from "@/lib/UserContext";
 
 const Page = () => {
   const [currentView, setCurrentView] = useState("Home");
@@ -18,26 +22,34 @@ const Page = () => {
         return <Home />;
       case "Search":
         return <Search />;
-      // Add more cases as needed
+      case "Activity":
+        return <Activity />;
+      case "Profile":
+        return <Profile />;
+      case "QuickSnap":
+        return <QuickSnap />;
+
       default:
         return <Home />;
     }
   };
   return (
-    <div>
-      <Topbar />
-      <main className="flex flex-row">
-        <LeftSidebar
-          setCurrentView={setCurrentView}
-          currentView={currentView}
-        />
-        <section className="main-container">
-          <div className="w-full max-w-4xl">{renderMainContent()}</div>
-        </section>
-        <RightSidebar />
-      </main>
-      <Bottombar setCurrentView={setCurrentView} />
-    </div>
+    <UserProvider>
+      <div>
+        <Topbar />
+        <main className="flex flex-row">
+          <LeftSidebar
+            setCurrentView={setCurrentView}
+            currentView={currentView}
+          />
+          <section className="main-container">
+            <div className="w-full max-w-4xl">{renderMainContent()}</div>
+          </section>
+          <RightSidebar />
+        </main>
+        <Bottombar setCurrentView={setCurrentView} />
+      </div>
+    </UserProvider>
   );
 };
 
