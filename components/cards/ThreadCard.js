@@ -3,17 +3,16 @@ import Link from "next/link";
 
 import { formatDateString } from "@/lib/utils";
 // import DeleteThread from "../forms/DeleteThread";
-
+const user_image_path = process.env.NEXT_PUBLIC_USER_IMAGES_ENDPOINT;
 function ThreadCard({
   id,
   currentUserId,
-  parentId,
   content,
   author,
-  community,
   createdAt,
   comments,
   isComment,
+  creator_image,
 }) {
   return (
     <article
@@ -24,10 +23,11 @@ function ThreadCard({
       <div className="flex items-start justify-between">
         <div className="flex w-full flex-1 flex-row gap-4">
           <div className="flex flex-col items-center">
-            <Link href={`/profile/${author.id}`} className="relative h-11 w-11">
-              <Image
-                src={author.image}
-                alt="user_community_image"
+            {/* <Link href={`/profile/${author.id}`} className="relative h-11 w-11"> */}
+            <Link href="#" className="relative h-11 w-11">
+              <img
+                src={user_image_path + creator_image}
+                alt="user_image"
                 fill
                 className="cursor-pointer rounded-full"
               />
@@ -39,7 +39,7 @@ function ThreadCard({
           <div className="flex w-full flex-col">
             <Link href={`/profile/${author.id}`} className="w-fit">
               <h4 className="cursor-pointer text-base-semibold text-light-1">
-                {author.name}
+                {author}
               </h4>
             </Link>
 
