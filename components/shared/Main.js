@@ -58,12 +58,14 @@ function Home() {
                   key={post.post_id}
                   id={post.post_id}
                   currentUserId={id}
-                  // parentId={post.parentId}
                   creator_image={post.profile_image}
                   content={post.content}
-                  author={post.username}
+                  author={post.first_name + " " + post.last_name}
+                  username={post.username}
                   createdAt={post.timestamp}
                   comments={1}
+                  post_images={post.post_images}
+                  isLiked={post.liked_by_user}
                 />
               ))}
             </>
