@@ -1,14 +1,15 @@
-"use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import UserCard from "@/components/cards/UserCard";
 import Searchbar from "@/components/shared/SearchBar";
 import Pagination from "@/components/shared/Pagination";
-import { suggestUsers } from "@/lib/actions/users";
+import { searchUser, suggestUsers } from "@/lib/actions/users";
 import { useUser } from "@/lib/UserContext";
+import debounce from "lodash/debounce";
 
 const Search = () => {
   const userImagePath = process.env.NEXT_PUBLIC_USER_IMAGES_ENDPOINT;
   const [searchResults, setSearchResults] = useState([]);
+  const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,8 +29,7 @@ const Search = () => {
       setErrorMessage(message);
       return;
     }
-    console.log(data);
-    setSuggestedUsers(data);
+    setSuggestedUsers(data || []);
   };
 
   useEffect(() => {
@@ -38,39 +38,122 @@ const Search = () => {
     }
   }, [id]);
 
+  const searchForUser = async (input) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { success, message, data } = await searchUser(input, id);
+      setIsLoading(false);
+
+      if (!success) {
+        setError(true);
+        setErrorMessage(message);
+        setSearchResults([]);
+        return;
+      }
+
+      setSearchResults(data);
+      console.log(data);
+      // setIsNext(!!data?.isNext);
+    } catch (error) {
+      setIsLoading(false);
+      setError(true);
+      setErrorMessage("An error occurred while searching");
+      setSearchResults([]);
+    }
+  };
+
+  // Debounce the search function
+  const debouncedSearch = useCallback(
+    debounce((input) => {
+      if (input) {
+        searchForUser(input);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300),
+    [currentPage]
+  );
+
+  useEffect(() => {
+    debouncedSearch(userInput);
+    // Cancel the debounce on useEffect cleanup.
+    return () => debouncedSearch.cancel();
+  }, [userInput, debouncedSearch]);
+
+  const handleSearch = (value) => {
+    setUserInput(value);
+    setCurrentPage(1);
+  };
+
   return (
     <section>
-      <div className="w-full max-w-4xl"></div>
+      <div className="w-full max-w-4xl">
+        <h1 className="head-text mb-10">Search</h1>
 
-      <h1 className="head-text mb-10">Search</h1>
+        <Searchbar
+          routeType="search"
+          value={userInput}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
 
-      <Searchbar routeType="search" />
+        <div className="mt-14 flex flex-col gap-9">
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <h3 className="head-text text-heading4-medium text-center">
+              {errorMessage}
+            </h3>
+          ) : searchResults.length > 0 ? (
+            searchResults.map((user) => (
+              <UserCard
+                key={user.id}
+                id={user.id}
+                name={`${user.first_name || ""} ${user.last_name || ""}`}
+                username={user.username || ""}
+                imgUrl={
+                  user.profile_image
+                    ? `${userImagePath}${user.profile_image}`
+                    : ""
+                }
+                personType="User"
+                isFollowing={user.is_following === 1}
+                isCurrentUser={user.user_id === id}
+              />
+            ))
+          ) : userInput ? (
+            <p>No results found</p>
+          ) : suggestedUsers.length > 0 ? (
+            suggestedUsers.map((user) => (
+              <UserCard
+                key={user.id}
+                id={user.id}
+                name={`${user.first_name || ""} ${user.last_name || ""}`}
+                username={user.username || ""}
+                imgUrl={
+                  user.profile_image
+                    ? `${userImagePath}${user.profile_image}`
+                    : ""
+                }
+                personType="User"
+                isFollowing={user.is_following === 1}
+                isCurrentUser={user.user_id === id}
+              />
+            ))
+          ) : (
+            <p>No suggested users available</p>
+          )}
+        </div>
 
-      <div className="mt-14 flex flex-col gap-9">
-        {suggestedUsers.length > 0 && !isLoading && !error ? (
-          suggestedUsers.map((user) => (
-            <UserCard
-              key={user.id}
-              id={user.id}
-              name={user.first_name + " " + user.last_name}
-              username={user.username}
-              imgUrl={userImagePath + user.profile_image}
-              personType="User"
-            />
-          ))
-        ) : (
-          <h3 className="head-text text-heading4-medium text-center">
-            {errorMessage}
-          </h3>
+        {searchResults.length > 0 && (
+          <Pagination
+            path="search"
+            pageNumber={currentPage}
+            isNext={isNext}
+            onPageChange={(newPage) => setCurrentPage(newPage)}
+          />
         )}
       </div>
-
-      {/* <Pagination
-        path="search"
-        pageNumber={currentPage}
-        isNext={isNext}
-        onPageChange={(newPage) => setCurrentPage(newPage)}
-      /> */}
     </section>
   );
 };
