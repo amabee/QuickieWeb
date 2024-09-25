@@ -24,15 +24,25 @@ import {
 import { toast, Toaster } from "react-hot-toast";
 import { useUser } from "@/lib/UserContext";
 import { createPost } from "@/lib/actions/posts";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { PostValidation } from "@/lib/helper";
 
 const PostThread = () => {
-  const router = useRouter();
   const [images, setImages] = useState([]);
   const [api, setApi] = useState();
   const [current, setCurrent] = useState();
   const [count, setCount] = useState(0);
   const [thread, setThread] = useState("");
-  const [loading, setLoading] = useState(false); // Loading state
+  const [expirationTime, setExpirationTime] = useState("24Hours");
+  const [loading, setLoading] = useState(false);
+  const [isValidInput, setIsValidInput] = useState(false);
 
   const currentUserID = useUser();
 
@@ -51,7 +61,7 @@ const PostThread = () => {
       JSON.stringify({
         user_id: currentUserID.user_id,
         content: thread,
-        expiry_duration: "24Hours",
+        expiry_duration: expirationTime,
       })
     );
 
@@ -152,6 +162,17 @@ const PostThread = () => {
   };
 
   useEffect(() => {
+    setIsValidInput(PostValidation(thread));
+  }, [thread]);
+
+  const handleMenuItemClick = (expirationTime) => {
+    setExpirationTime(expirationTime);
+    console.log(expirationTime);
+
+    form.handleSubmit(onSubmit)();
+  };
+
+  useEffect(() => {
     if (!api) {
       return;
     }
@@ -207,7 +228,7 @@ const PostThread = () => {
         <FormField
           control={form.control}
           name="thread"
-          render={({ field }) => (
+          render={() => (
             <FormItem className="flex w-full flex-col gap-3">
               <FormLabel className="text-base-semibold text-light-2">
                 Content
@@ -225,16 +246,45 @@ const PostThread = () => {
         />
 
         <div className="flex items-center gap-4">
-          <Button type="submit" className="bg-primary-500" disabled={loading}>
-            {loading ? (
-              <span>Loading...</span>
-            ) : (
-              "Create Post"
-            )}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                className="bg-primary-500"
+                disabled={loading || !isValidInput}
+              >
+                {loading ? <span>Loading...</span> : "Post Content"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-indigo-500">
+              <DropdownMenuLabel className="text-white">
+                Select Post Duration:
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              {["24Hours", "12Hours", "5Hours", "1Hour", "30Mins"].map(
+                (time) => (
+                  <DropdownMenuItem
+                    key={time}
+                    className="hover:bg-indigo-600 cursor-pointer"
+                    onClick={() => handleMenuItemClick(time)}
+                  >
+                    <button
+                      type="button"
+                      className="cursor-pointer bg-transparent text-secondary-background text-fuchsia-50
+                      inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2"
+                      disabled={loading}
+                    >
+                      {time.replace(/([A-Z])/g, " $1")}
+                    </button>
+                  </DropdownMenuItem>
+                )
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <label
             htmlFor="image-upload"
-            className="cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
+            className="cursor-pointer bg-secondary text-secondary-foreground hover:bg-indigo-600 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
           >
             <Camera className="mr-2 h-4 w-4" />
             Add Portrait Image
