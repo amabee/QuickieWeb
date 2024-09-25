@@ -78,7 +78,10 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
   };
 
   const getCommentsByPOST = async () => {
-    const { success, message, data } = await getComments(post.id);
+    const { success, message, data } = await getComments(
+      post.id,
+      userID.user_id
+    );
 
     if (!success) {
       setComments([]);
@@ -154,6 +157,7 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
                 comments.map((comment) => (
                   <CommentCard
                     key={comment.id || comment.comment_id}
+                    comment_id={comment.id || comment.comment_id}
                     post_id={post.id}
                     author={
                       comment.first_name && comment.last_name
@@ -163,8 +167,10 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
                     username={comment.username || post.username}
                     content={comment.content}
                     createdAt={comment.timestamp}
-                    authorImage={user_image_path + comment.authorImage}
+                    authorImage={user_image_path + comment.profile_image}
                     isSending={comment.isSending}
+                    isLikedByCurrentUser={comment.liked_by_user}
+                    replies={comment.replies}
                   />
                 ))
               ) : (

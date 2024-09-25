@@ -13,6 +13,7 @@ import {
 import { likePost } from "@/lib/actions/posts";
 import toast, { Toaster } from "react-hot-toast";
 import ThreadModal from "../shared/ThreadModal";
+import { HoverProfileCard } from "../shared/HoverProfileCard";
 
 const user_image_path = process.env.NEXT_PUBLIC_USER_IMAGES_ENDPOINT;
 const post_images_path = process.env.NEXT_PUBLIC_POST_IMAGES_ENDPOINT;
@@ -143,11 +144,19 @@ function ThreadCard({
           </div>
 
           <div className="flex w-full flex-col relative" ref={contentRef}>
-            <Link href={`/profile/${author.id}`} className="w-fit">
-              <h3 className="cursor-pointer text-base-semibold text-light-1">
+            <h3 className="cursor-pointer text-base-semibold text-light-1">
+              <HoverProfileCard
+                name={author}
+                username={username}
+                imgUrl={user_image_path + creator_image}
+                // followers={followers}
+                // following={following}
+                // posts={posts}
+              >
                 {author}
-              </h3>
-            </Link>
+              </HoverProfileCard>
+            </h3>
+
             <h6 className="text-sm text-gray-1 disabled">@{username}</h6>
             <div
               className="relative mt-2 text-small-regular text-light-2"
