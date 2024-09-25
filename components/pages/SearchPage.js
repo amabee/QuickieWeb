@@ -54,7 +54,6 @@ const Search = () => {
 
       setSearchResults(data);
       console.log(data);
-      // setIsNext(!!data?.isNext);
     } catch (error) {
       setIsLoading(false);
       setError(true);
@@ -77,7 +76,6 @@ const Search = () => {
 
   useEffect(() => {
     debouncedSearch(userInput);
-    // Cancel the debounce on useEffect cleanup.
     return () => debouncedSearch.cancel();
   }, [userInput, debouncedSearch]);
 
@@ -107,8 +105,8 @@ const Search = () => {
           ) : searchResults.length > 0 ? (
             searchResults.map((user) => (
               <UserCard
-                key={user.id}
-                id={user.id}
+                key={user.user_id}
+                id={user.user_id}
                 name={`${user.first_name || ""} ${user.last_name || ""}`}
                 username={user.username || ""}
                 imgUrl={
@@ -122,12 +120,14 @@ const Search = () => {
               />
             ))
           ) : userInput ? (
-            <p>No results found</p>
+            <p className="head-text text-center text-heading4-medium">
+              No results found
+            </p>
           ) : suggestedUsers.length > 0 ? (
             suggestedUsers.map((user) => (
               <UserCard
-                key={user.id}
-                id={user.id}
+                key={user.user_id}
+                id={user.user_id}
                 name={`${user.first_name || ""} ${user.last_name || ""}`}
                 username={user.username || ""}
                 imgUrl={
