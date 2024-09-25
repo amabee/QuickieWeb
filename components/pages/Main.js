@@ -1,124 +1,146 @@
+"use client";
+import { useUser } from "@/lib/UserContext";
 import ThreadCard from "../cards/ThreadCard";
-import Pagination from "../shared/Pagination";
+import { useEffect, useState, useRef } from "react";
+import { getPosts } from "@/lib/actions/posts";
+import toast, { Toaster } from "react-hot-toast";
 
-const samplePosts = [
-  {
-    _id: "1",
-    parentId: null,
-    text: "This is the first thread post.",
-    author: {
-      id: "user1",
-      name: "Alice",
-      avatar: "/images/alice.png",
-    },
-    community: "General Discussion",
-    createdAt: "2024-09-20T12:34:56Z",
-    children: [
-      {
-        _id: "c1",
-        text: "This is a comment on the first post.",
-        author: {
-          id: "user2",
-          name: "Bob",
-          avatar: "/images/bob.png",
-        },
-        createdAt: "2024-09-20T13:00:00Z",
-      },
-    ],
-  },
-  {
-    _id: "2",
-    parentId: null,
-    text: "This is the second thread post.",
-    author: {
-      id: "user3",
-      name: "Charlie",
-      avatar: "/images/charlie.png",
-    },
-    community: "Tech Talk",
-    createdAt: "2024-09-21T08:15:30Z",
-    children: [],
-  },
-  {
-    _id: "3",
-    parentId: null,
-    text: "Check out this interesting topic!",
-    author: {
-      id: "user1",
-      name: "Alice",
-      avatar: "/images/alice.png",
-    },
-    community: "News",
-    createdAt: "2024-09-22T09:45:12Z",
-    children: [
-      {
-        _id: "c2",
-        text: "I find this very insightful!",
-        author: {
-          id: "user2",
-          name: "Bob",
-          avatar: "/images/bob.png",
-        },
-        createdAt: "2024-09-22T10:00:00Z",
-      },
-      {
-        _id: "c3",
-        text: "Can you provide more details?",
-        author: {
-          id: "user4",
-          name: "Daisy",
-          avatar: "/images/daisy.png",
-        },
-        createdAt: "2024-09-22T10:15:00Z",
-      },
-    ],
-  },
-];
+function Home() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const limit = 15;
+  const currentUserID = useUser();
+  const id = currentUserID?.user_id ?? null;
+  const scrollPositionRef = useRef(0);
 
-const result = {
-  posts: samplePosts,
-  isNext: true, // Set to false if there are no more posts
-};
+  const getPost = async (newOffset = 0) => {
+    if (id !== null) {
+      setLoading(newOffset === 0);
+      setLoadingMore(newOffset !== 0);
 
-// Usage in your Home component
-function Home({ searchParams }) {
-  // Replace fetchPosts with the mock data
-  const result = {
-    posts: samplePosts,
-    isNext: true, // Example: set to true if there are more pages
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      setIsLoading(false);
+      try {
+        const { success, message, data } = await getPosts(id, limit, newOffset);
+
+        if (!success) {
+          setPosts([]);
+          toast.error(message || "Failed to load posts");
+        } else {
+          setPosts((prevPosts) =>
+            newOffset === 0 ? data : [...prevPosts, ...data]
+          );
+
+          if (data.length < limit) {
+            setHasMorePosts(false);
+            if (newOffset !== 0) {
+              toast.success("No more posts to load");
+            }
+          } else {
+            setHasMorePosts(true);
+          }
+        }
+      } catch (error) {
+        toast.error("Failed to load posts. Please try again.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        setIsLoading(false);
+      }
+    } else if (id === null) {
+      console.error("User ID not available");
+      toast.error("User ID not available");
+    }
   };
+
+  useEffect(() => {
+    if (id !== null) {
+      getPost();
+    }
+  }, [id]);
+
+  const handleScroll = () => {
+    if (loading || loadingMore || !hasMorePosts) {
+      return;
+    }
+
+    const scrollY = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    if (scrollY + windowHeight >= documentHeight - 100) {
+      scrollPositionRef.current = scrollY;
+      setOffset((prevOffset) => prevOffset + limit);
+      setIsLoading(true);
+    }
+  };
+
+  useEffect(() => {
+    if (id !== null && !loading && !loadingMore && hasMorePosts) {
+      getPost(offset);
+    }
+  }, [offset]);
+
+  useEffect(() => {
+    if (id !== null) {
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+  }, [loading, loadingMore, hasMorePosts]);
+
+  useEffect(() => {
+    if (!loadingMore) {
+      window.scrollTo(0, scrollPositionRef.current);
+    }
+  }, [posts]);
+
+  if (id === null) {
+    return <p>Loading user data...</p>;
+  }
 
   return (
     <>
       <h1 className="head-text text-left">Home</h1>
 
-      <section className="mt-9 flex flex-col gap-10">
-        {result.posts.length === 0 ? (
-          <p className="no-result">No threads found</p>
-        ) : (
-          <>
-            {result.posts.map((post) => (
-              <ThreadCard
-                key={post._id}
-                id={post._id}
-                currentUserId={1}
-                parentId={post.parentId}
-                content={post.text}
-                author={post.author}
-                community={post.community}
-                createdAt={post.createdAt}
-                comments={post.children}
-              />
-            ))}
-          </>
-        )}
-      </section>
-      {/* 
-      <Pagination
-        path="/"
-        pageNumber={searchParams?.page ? +searchParams.page : 1}
-        isNext={result.isNext}
-      /> */}
+      {loading ? (
+        <p>Loading posts...</p>
+      ) : (
+        <section className="mt-9 flex flex-col gap-10">
+          {posts.length === 0 ? (
+            <p className="no-result">No Quick Snaps found</p>
+          ) : (
+            <>
+              <Toaster position="bottom-left" reverseOrder={false} />
+              {posts.map((post) => (
+                <ThreadCard
+                  key={post.post_id}
+                  id={post.post_id}
+                  currentUserId={id}
+                  creator_image={post.profile_image}
+                  content={post.content}
+                  author={post.first_name + " " + post.last_name}
+                  username={post.username}
+                  createdAt={post.timestamp}
+                  comments={1}
+                  post_images={post.post_images}
+                  isLiked={post.liked_by_user}
+                />
+              ))}
+              {isLoading && hasMorePosts && (
+                <h1 className="head-text text-center">LOADING MORE POSTS...</h1>
+              )}
+              {!hasMorePosts && posts.length > 0 && (
+                <p className="text-center text-gray-500">No more posts to display</p>
+              )}
+            </>
+          )}
+        </section>
+      )}
     </>
   );
 }

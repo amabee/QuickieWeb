@@ -6,12 +6,12 @@ import Topbar from "@/components/shared/TopBar";
 import RightSidebar from "@/components/shared/RightSidebar";
 import LeftSidebar from "@/components/shared/LeftSidebar";
 import Bottombar from "@/components/shared/BottomBar";
-import Home from "@/components/shared/Main";
 import Search from "@/components/shared/SearchPage";
 import Activity from "@/components/pages/Activities";
 import Profile from "./profile/[id]/page";
 import QuickSnap from "@/components/pages/QuickSnap";
 import { UserProvider, useUser } from "@/lib/UserContext";
+import Home from "@/components/pages/Main";
 
 const Page = () => {
   const [currentView, setCurrentView] = useState("Home");
