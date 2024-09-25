@@ -23,6 +23,7 @@ function ThreadCard({
   content,
   author,
   createdAt,
+  postExpiry,
   comments,
   isComment,
   username,
@@ -248,9 +249,14 @@ function ThreadCard({
       )}
 
       {!isComment && (
-        <p className="text-subtle-medium text-gray-1 mt-3">
-          Posted At: {formatDateString(createdAt)}
-        </p>
+        <div>
+          <p className="text-subtle-medium text-gray-1 mt-3">
+            Posted At: {formatDateString(createdAt)}
+          </p>
+          <p className="text-subtle-medium text-gray-1 mt-3">
+            Expires At: {formatDateString(postExpiry)}
+          </p>
+        </div>
       )}
 
       <Toaster position="bottom-left" reverseOrder={false} />

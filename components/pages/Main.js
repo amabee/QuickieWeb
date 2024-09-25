@@ -22,7 +22,7 @@ function Home() {
       setLoading(newOffset === 0);
       setLoadingMore(newOffset !== 0);
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      //await new Promise((resolve) => setTimeout(resolve, 3000));
 
       setIsLoading(false);
       try {
@@ -126,6 +126,7 @@ function Home() {
                   author={post.first_name + " " + post.last_name}
                   username={post.username}
                   createdAt={post.timestamp}
+                  postExpiry={post.expiry_duration}
                   comments={1}
                   post_images={post.post_images}
                   isLiked={post.liked_by_user}
@@ -135,7 +136,9 @@ function Home() {
                 <h1 className="head-text text-center">LOADING MORE POSTS...</h1>
               )}
               {!hasMorePosts && posts.length > 0 && (
-                <p className="text-center text-gray-500">No more posts to display</p>
+                <p className="text-center text-gray-500">
+                  No more posts to display
+                </p>
               )}
             </>
           )}

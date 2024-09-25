@@ -20,7 +20,7 @@
 *.pem
 
 *.pack.gz
-
+*.pack.gz.old
 
 # debug
 npm-debug.log*
@@ -28,7 +28,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
+.env.local
 
 # vercel
 .vercel
