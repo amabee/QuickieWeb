@@ -20,7 +20,7 @@
 *.pem
 
 *.pack.gz
-
+*.pack.gz.old
 
 # debug
 npm-debug.log*
