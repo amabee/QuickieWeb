@@ -227,9 +227,9 @@ const PostThread = () => {
         <div className="flex items-center gap-4">
           <Button type="submit" className="bg-primary-500" disabled={loading}>
             {loading ? (
-              <span>Loading...</span> // You can replace this with a spinner icon if desired
+              <span>Loading...</span>
             ) : (
-              "Post Thread"
+              "Create Post"
             )}
           </Button>
           <label

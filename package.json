@@ -20,6 +20,7 @@
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.3.0",
     "jose": "^5.9.3",
+    "lottie-web": "^5.12.2",
     "lucide-react": "^0.445.0",
     "next": "^14.2.13",
     "react": "^18",
