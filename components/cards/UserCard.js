@@ -1,7 +1,7 @@
 "use client";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
+import { Plus } from "lucide-react";
 
 function UserCard({ id, name, username, imgUrl, personType }) {
   const router = useRouter();
@@ -12,7 +12,7 @@ function UserCard({ id, name, username, imgUrl, personType }) {
     <article className="user-card">
       <div className="user-card_avatar">
         <div className="relative h-12 w-12">
-          <Image
+          <img
             src={imgUrl}
             alt="user_logo"
             fill
@@ -28,15 +28,15 @@ function UserCard({ id, name, username, imgUrl, personType }) {
 
       <Button
         className="user-card_btn"
-        onClick={() => {
-          if (isCommunity) {
-            router.push(`/communities/${id}`);
-          } else {
-            router.push(`/profile/${id}`);
-          }
-        }}
+        // onClick={() => {
+        //   if (isCommunity) {
+        //     router.push(`/communities/${id}`);
+        //   } else {
+        //     router.push(`/profile/${id}`);
+        //   }
+        // }}
       >
-        View
+        <Plus /> Follow
       </Button>
     </article>
   );

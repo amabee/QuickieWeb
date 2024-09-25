@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 
-function Searchbar({ routeType }) {
+function Searchbar() {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
@@ -35,9 +35,7 @@ function Searchbar({ routeType }) {
         id='text'
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder={`${
-          routeType !== "/search" ? "Search communities" : "Search creators"
-        }`}
+        placeholder={"Find someone..."}
         className='no-focus searchbar_input'
       />
     </div>

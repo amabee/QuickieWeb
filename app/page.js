@@ -6,7 +6,7 @@ import Topbar from "@/components/shared/TopBar";
 import RightSidebar from "@/components/shared/RightSidebar";
 import LeftSidebar from "@/components/shared/LeftSidebar";
 import Bottombar from "@/components/shared/BottomBar";
-import Search from "@/components/shared/SearchPage";
+import Search from "@/components/pages/SearchPage";
 import Activity from "@/components/pages/Activities";
 import Profile from "./profile/[id]/page";
 import QuickSnap from "@/components/pages/QuickSnap";
