@@ -254,7 +254,7 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
               <div className="relative flex items-center">
                 {replyingTo && (
                   <Badge variant="secondary" className="mr-2 flex-shrink-0">
-                    Replying to @{parentID}
+                    Replying to @{replyingTo}
                     <Button
                       size="sm"
                       variant="ghost"
