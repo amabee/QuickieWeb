@@ -1,18 +1,22 @@
-"use client";
 import React, { useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, CornerDownRight } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useUser } from "@/lib/UserContext";
-import { likeComment, unlikeComment } from "@/lib/actions/posts";
+import {
+  likeComment,
+  likeCommentReply,
+  unlikeComment,
+} from "@/lib/actions/posts";
 import { HeartFilledIcon } from "@radix-ui/react-icons";
 
 const CommentCard = ({
   post_id,
   comment_id,
+  reply_id,
   author,
   username,
   content,
@@ -22,16 +26,20 @@ const CommentCard = ({
   isLikedByCurrentUser,
   depth = 0,
   replies = [],
+  onReply,
+  onReplyParentID,
 }) => {
   const user_image_path = process.env.NEXT_PUBLIC_USER_IMAGES_ENDPOINT;
-  const [isCommentLiked, setIsCommentLiked] = useState(isLikedByCurrentUser);
+  const [isLiked, setIsLiked] = useState(isLikedByCurrentUser);
   const [showReplies, setShowReplies] = useState(false);
 
   const toggleReplies = () => setShowReplies(!showReplies);
 
   const userID = useUser();
 
-  const likeComments = async () => {
+  const isReply = !!reply_id;
+
+  const handleLikeComment = async () => {
     const formData = new FormData();
     formData.append("operation", "likeComment");
     formData.append(
@@ -42,17 +50,17 @@ const CommentCard = ({
       })
     );
 
-    const { success, message, data } = await likeComment({ formData });
+    const { success, message } = await likeComment({ formData });
 
     if (!success) {
-      return toast.error("Oops! something went wrong liking the comment");
+      return toast.error(message);
     }
 
     toast.success("Comment Liked");
-    setIsCommentLiked(1);
+    setIsLiked(true);
   };
 
-  const unlikeComments = async () => {
+  const handleUnlikeComment = async () => {
     const formData = new FormData();
     formData.append("operation", "unlikeComment");
     formData.append(
@@ -63,18 +71,68 @@ const CommentCard = ({
       })
     );
 
-    const { success, message, data } = await unlikeComment({ formData });
+    const { success, message } = await unlikeComment({ formData });
 
     if (!success) {
-      return toast.error("Oops! something went wrong unliking the comment");
+      return toast.error("Oops! Something went wrong unliking the comment");
     }
 
     toast.success("Comment Unliked");
-    setIsCommentLiked(0);
+    setIsLiked(false);
+  };
+
+  const handleLikeReply = async () => {
+    const formData = new FormData();
+    formData.append("operation", "likeReply");
+    formData.append(
+      "json",
+      JSON.stringify({
+        user_id: userID.user_id,
+        reply_id: reply_id,
+      })
+    );
+
+    const { success, message } = await likeCommentReply({ formData });
+
+    if (!success) {
+      return toast.error(message);
+    }
+
+    toast.success("Comment Liked");
+    setIsLiked(true);
+  };
+
+  const handleUnlikeReply = async () => {
+    const formData = new FormData();
+    formData.append("operation", "unlikeReply");
+    formData.append(
+      "json",
+      JSON.stringify({
+        user_id: userID.user_id,
+        reply_id: reply_id,
+      })
+    );
+
+    const { success, message } = await likeCommentReply({ formData });
+
+    if (!success) {
+      return toast.error(message);
+    }
+
+    toast.success("Comment unliked");
+    setIsLiked(false);
+  };
+
+  const handleLike = isReply ? handleLikeReply : handleLikeComment;
+  const handleUnlike = isReply ? handleUnlikeReply : handleUnlikeComment;
+
+  const handleReply = () => {
+    onReply(username);
+    onReplyParentID(reply_id);
   };
 
   return (
-    <div className={`relative ${depth > 0 ? "ml-8" : ""}`}>
+    <div className={`border-none relative ${depth > 0 ? "ml-8" : ""}`}>
       {depth > 0 && (
         <div className="absolute left-[-24px] top-0 h-full">
           <div className="absolute left-0 top-0 h-full w-px bg-gray-600"></div>
@@ -117,18 +175,24 @@ const CommentCard = ({
                         variant="ghost"
                         size="sm"
                         className="p-0"
-                        onClick={isCommentLiked ? unlikeComments : likeComments}
+                        onClick={isLiked ? handleUnlike : handleLike}
                       >
-                        {isCommentLiked ? (
+                        {isLiked ? (
                           <HeartFilledIcon className="h-5 w-5 text-red-500" />
                         ) : (
                           <Heart className="h-5 w-5 text-gray-400" />
                         )}
                       </Button>
 
-                      <Button variant="ghost" size="sm" className="p-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-0"
+                        onClick={handleReply}
+                      >
                         <MessageCircle className="h-5 w-5 text-gray-400" />
                       </Button>
+
                       {replies.length > 0 && (
                         <Button
                           variant="ghost"
@@ -152,7 +216,9 @@ const CommentCard = ({
       </Card>
 
       {isSending && (
-        <p className="text-xs text-gray-400 mt-1 ml-11">Sending comment...</p>
+        <p className="text-xs text-gray-400 mt-1 ml-11">
+          Sending {isReply ? "reply" : "comment"}...
+        </p>
       )}
 
       {showReplies && replies.length > 0 && (
@@ -163,13 +229,19 @@ const CommentCard = ({
         >
           {replies.map((reply) => (
             <CommentCard
-              key={reply.reply_id}
+              key={reply.id}
+              post_id={post_id}
+              reply_id={reply.id}
               author={reply.first_name + " " + reply.last_name}
               username={reply.username}
               content={reply.content}
               createdAt={reply.timestamp}
               authorImage={user_image_path + reply.profile_image}
               depth={depth + 1}
+              isLikedByCurrentUser={reply.liked_by_user}
+              replies={reply.replies}
+              onReply={onReply}
+              onReplyParentID={onReplyParentID}
             />
           ))}
         </div>
