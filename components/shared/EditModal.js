@@ -2,18 +2,16 @@
 
 import Image from "next/image";
 import { useForm } from "react-hook-form";
-import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -21,58 +19,61 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { isBase64Image } from "@/lib/utils";
+import { updateProfile } from "@/lib/actions/users";
 
 const AccountProfileDialog = ({ user, btnTitle, isOpen, onOpenChange }) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  // const { startUpload } = useUploadThing("media");
-  let startUpload;
-
   const [files, setFiles] = useState([]);
 
   const form = useForm({
     defaultValues: {
-      profile_photo: user?.image || "",
-      name: user?.name || "",
+      profile_photo: user?.imgUrl || "",
+      first_name: user?.firstname || "",
+      last_name: user?.lastname || "",
       username: user?.username || "",
+      email: user?.email || "",
       bio: user?.bio || "",
     },
   });
 
   const onSubmit = async (values) => {
-    const blob = values.profile_photo;
+    const formData = new FormData();
 
-    const hasImageChanged = isBase64Image(blob);
-    if (hasImageChanged) {
-      const imgRes = await startUpload(files);
+    formData.append("operation", "updateProfile");
+    formData.append(
+      "json",
+      JSON.stringify({
+        user_id: user.accountId,
+        profile_image: values.imgUrl,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        username: values.username,
+        email: values.email,
+        bio: values.bio ?? "",
+      })
+    );
 
-      if (imgRes && imgRes[0].fileUrl) {
-        values.profile_photo = imgRes[0].fileUrl;
-      }
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
     }
 
-    await updateUser({
-      name: values.name,
-      path: pathname,
-      username: values.username,
-      userId: user.id,
-      bio: values.bio,
-      image: values.profile_photo,
-    });
+    const profilePhotoFile = files[0];
+    if (profilePhotoFile) {
+      formData.append("profile_image", profilePhotoFile);
+    }
 
-    if (pathname === "/profile/edit") {
-      router.back();
+    const { success, message, data } = await updateProfile({ formData });
+
+    if (success) {
+      alert("Profile updated successfully!");
     } else {
-      router.push("/");
+      alert(`Error: ${message}`);
     }
 
-    onOpenChange(false); // Close the dialog after submission
+    window.location.reload();
   };
 
   const handleImage = (e, fieldChange) => {
@@ -114,7 +115,7 @@ const AccountProfileDialog = ({ user, btnTitle, isOpen, onOpenChange }) => {
                   <FormItem>
                     <FormLabel className="cursor-pointer">
                       {field.value ? (
-                        <Image
+                        <img
                           src={field.value}
                           alt="profile_icon"
                           width={150}
@@ -123,7 +124,7 @@ const AccountProfileDialog = ({ user, btnTitle, isOpen, onOpenChange }) => {
                         />
                       ) : (
                         <div className="w-[150px] h-[150px] rounded-full bg-gray-700 flex items-center justify-center">
-                          <Image
+                          <img
                             src="/assets/profile.svg"
                             alt="profile_icon"
                             width={50}
@@ -159,11 +160,29 @@ const AccountProfileDialog = ({ user, btnTitle, isOpen, onOpenChange }) => {
             <div className="flex-1 flex flex-col gap-4">
               <FormField
                 control={form.control}
-                name="name"
+                name="first_name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-300">
-                      Name
+                      First Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        className="bg-gray-800 border-gray-700 text-white focus:ring-2 focus:ring-blue-500 rounded p-2"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="last_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-300">
+                      Last Name
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -195,6 +214,25 @@ const AccountProfileDialog = ({ user, btnTitle, isOpen, onOpenChange }) => {
 
               <FormField
                 control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-300">
+                      Email
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        className="bg-gray-800 border-gray-700 text-white focus:ring-2 focus:ring-blue-500 rounded p-2"
+                        disabled
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
@@ -218,8 +256,7 @@ const AccountProfileDialog = ({ user, btnTitle, isOpen, onOpenChange }) => {
           <DialogClose asChild>
             <Button
               type="button"
-              className="w-full bg-destructive hover:bg-red-700
-             text-white font-bold py-2 px-4 rounded transition duration-300"
+              className="w-full bg-destructive hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300"
             >
               Cancel
             </Button>

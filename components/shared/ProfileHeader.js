@@ -5,12 +5,12 @@ import AccountProfileModal from "./EditModal";
 
 function ProfileHeader({
   accountId,
-  authUserId,
-  name,
+  firstname,
+  lastname,
   username,
+  email,
   imgUrl,
   bio,
-  type,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -37,10 +37,19 @@ function ProfileHeader({
 
           <div className="flex-1">
             <h2 className="text-left text-heading3-bold text-light-1">
-              {name}
+              {`${firstname} ${lastname}`}
             </h2>
             <p className="text-base-medium text-gray-1">@{username}</p>
           </div>
+        </div>
+
+        <div
+          className="flex cursor-pointer gap-3 rounded-lg bg-dark-3 px-4 py-2"
+          onClick={handleOpenModal}
+        >
+          <Image src="/assets/edit.svg" alt="logout" width={16} height={16} />
+
+          <p className="text-light-2 max-sm:hidden">Edit</p>
         </div>
       </div>
 
@@ -51,7 +60,15 @@ function ProfileHeader({
         isOpen={isModalOpen}
         onOpenChange={(open) => setIsModalOpen(open)}
         onClose={handleCloseModal}
-        user={1}
+        user={{
+          accountId,
+          firstname,
+          lastname,
+          username,
+          email,
+          imgUrl,
+          bio,
+        }}
         btnTitle="Save Changes"
       />
     </div>
