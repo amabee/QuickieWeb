@@ -1,8 +1,7 @@
-"use client";
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, X } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -11,9 +10,10 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Input } from "../ui/input";
+import { Badge } from "@/components/ui/badge";
 import { formatDateString } from "@/lib/utils";
 import CommentCard from "./CommentCard";
-import { getComments, sendComment } from "@/lib/actions/posts";
+import { getComments, sendComment, sendReply } from "@/lib/actions/posts";
 import { useUser } from "@/lib/UserContext";
 
 const ThreadModal = ({ post, isOpen, onClose }) => {
@@ -24,56 +24,64 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyingToCommentId, setReplyingToCommentId] = useState(null);
+  const [parentID, setParentID] = useState(null);
   const userID = useUser();
 
   const sendComments = async () => {
     if (isSending || !comment.trim()) return;
 
     setIsSending(true);
-    const newComment = {
-      id: Date.now(),
-      post_id: post.id,
-      user_id: userID.user_id,
-      content: comment,
-      author: post.author,
-      username: post.username,
-      createdAt: new Date().toISOString(),
-      authorImage: post.profile_image,
-      isSending: true,
-    };
 
-    setComments((prevComments) => [newComment, ...prevComments]);
-    setComment("");
-
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const formData = new FormData();
-    formData.append("operation", "sendComment");
-    formData.append(
-      "json",
-      JSON.stringify({
+    if (replyingTo) {
+      await handleReplyMessage(replyingToCommentId);
+    } else {
+      const newComment = {
+        id: Date.now(),
         post_id: post.id,
         user_id: userID.user_id,
-        content: newComment.content,
-      })
-    );
+        content: comment,
+        author: post.author,
+        username: post.username,
+        createdAt: new Date().toISOString(),
+        authorImage: post.profile_image,
+        isSending: true,
+      };
 
-    const { success, message, data } = await sendComment({ formData });
+      setComments((prevComments) => [newComment, ...prevComments]);
 
-    if (!success) {
-      console.log(message);
-      setComments((prevComments) =>
-        prevComments.filter((c) => c.id !== newComment.id)
+      const formData = new FormData();
+      formData.append("operation", "sendComment");
+      formData.append(
+        "json",
+        JSON.stringify({
+          post_id: post.id,
+          user_id: userID.user_id,
+          content: comment,
+        })
       );
-    } else {
-      setComments((prevComments) =>
-        prevComments.map((c) =>
-          c.id === newComment.id ? { ...c, isSending: false, ...data } : c
-        )
-      );
+
+      const { success, message, data } = await sendComment({ formData });
+
+      if (!success) {
+        console.log(message);
+        setComments((prevComments) =>
+          prevComments.filter((c) => c.id !== newComment.id)
+        );
+      } else {
+        setComments((prevComments) =>
+          prevComments.map((c) =>
+            c.id === newComment.id ? { ...c, isSending: false, ...data } : c
+          )
+        );
+      }
     }
 
     setIsSending(false);
+    setComment("");
+    setReplyingTo(null);
+    setReplyingToCommentId(null);
     getCommentsByPOST();
   };
 
@@ -95,6 +103,53 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
   useEffect(() => {
     getCommentsByPOST();
   }, []);
+
+  const handleReply = (username, commentId) => {
+    setReplyingTo(username);
+    setReplyingToCommentId(commentId);
+  };
+
+  const handleReplyParentID = (parentID) => {
+    setParentID(parentID);
+  };
+
+  const handleReplyMessage = async (replyingToCommentId) => {
+    const formData = new FormData();
+    formData.append("operation", "addCommentReply");
+    formData.append(
+      "json",
+      JSON.stringify({
+        user_id: userID.user_id,
+        post_id: post.id,
+        main_id: replyingToCommentId,
+        content: comment,
+        parent_id: parentID,
+      })
+    );
+
+    const { success, message, data } = await sendReply({ formData });
+
+    if (!success) {
+      console.log(message);
+    } else {
+      setComments((prevComments) => {
+        return prevComments.map((c) => {
+          if (c.id === replyingToCommentId) {
+            return {
+              ...c,
+              replies: [...(c.replies || []), data],
+            };
+          }
+          return c;
+        });
+      });
+    }
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setReplyingToCommentId(null);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -171,6 +226,12 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
                     isSending={comment.isSending}
                     isLikedByCurrentUser={comment.liked_by_user}
                     replies={comment.replies}
+                    onReply={(username) =>
+                      handleReply(username, comment.comment_id)
+                    }
+                    onReplyParentID={(reply_id) =>
+                      handleReplyParentID(reply_id)
+                    }
                   />
                 ))
               ) : (
@@ -181,8 +242,8 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-800">
-              <div className="mb-2 font-semibold">{post.likes || 0} likes</div>
+            <div className="p-4 border-t h-20 border-gray-800">
+              <div className="mb-1 font-semibold">{post.likes || 0} likes</div>
               <div className="text-gray-400 text-xs">
                 Posted On: {formatDateString(post.createdAt)}
               </div>
@@ -190,10 +251,23 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
 
             {/* Input section */}
             <div className="p-4 border-t border-gray-800">
-              <div className="relative">
+              <div className="relative flex items-center">
+                {replyingTo && (
+                  <Badge variant="secondary" className="mr-2 flex-shrink-0">
+                    Replying to @{parentID}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="p-0 h-auto ml-1"
+                      onClick={cancelReply}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                )}
                 <Input
                   placeholder="Add a comment..."
-                  className="pr-10 py-3 text-base"
+                  className="flex-grow pr-10 py-3 h-12 text-base pl-3"
                   onChange={(e) => setComment(e.target.value)}
                   value={comment}
                   disabled={isSending}
