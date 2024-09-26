@@ -206,7 +206,7 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
                [&::-webkit-scrollbar]:w-1
               [&::-webkit-scrollbar-track]:bg-gray-600
               [&::-webkit-scrollbar-thumb]:bg-gray-700"
-              style={{ maxHeight: "calc(100vh - 330px)" }}
+              style={{ maxHeight: "20rem" }}
             >
               {comments.length > 0 ? (
                 comments.map((comment) => (
