@@ -135,8 +135,10 @@ function Profile() {
       <ProfileHeader
         accountId={currentUser.user_id}
         authUserId={currentUser.user_id}
-        name={`${currentUser.first_name} ${currentUser.last_name}`}
+        firstname={currentUser.first_name}
+        lastname={currentUser.last_name}
         username={currentUser.username}
+        email={currentUser.email}
         imgUrl={user_image_path + currentUser.profile_image}
         bio={currentUser.bio || "No bio available"}
       />
