@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Camera, X } from "lucide-react";
 import {
@@ -12,37 +11,38 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  CarouselApi,
 } from "@/components/ui/carousel";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast, Toaster } from "react-hot-toast";
 import { useUser } from "@/lib/UserContext";
 import { createPost } from "@/lib/actions/posts";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { PostValidation } from "@/lib/helper";
+import { canPostAgainFunc } from "@/lib/actions/users";
 
 const PostThread = () => {
   const [images, setImages] = useState([]);
   const [api, setApi] = useState();
-  const [current, setCurrent] = useState();
+  const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
   const [thread, setThread] = useState("");
-  const [expirationTime, setExpirationTime] = useState("24Hours");
   const [loading, setLoading] = useState(false);
   const [isValidInput, setIsValidInput] = useState(false);
+  const [canPostAgain, setCanPostAgain] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
   const currentUserID = useUser();
 
@@ -61,13 +61,13 @@ const PostThread = () => {
       JSON.stringify({
         user_id: currentUserID.user_id,
         content: thread,
-        expiry_duration: expirationTime,
+        expiry_duration: "1Hour",
       })
     );
 
     images.forEach((image) => formData.append("images[]", image));
 
-    setLoading(true); // Start loading
+    setLoading(true);
 
     try {
       const { success, message } = await createPost({ formData });
@@ -87,7 +87,7 @@ const PostThread = () => {
       console.log("Error creating post:", error);
       toast.error("An error occurred while creating the post.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -98,12 +98,10 @@ const PostThread = () => {
       img.onload = () => {
         const aspectRatio = img.width / img.height;
 
-        // Check for aspect ratio between 1.91:1 and 4:5
         if (aspectRatio < 1.91 / 1 || aspectRatio > 4 / 5) {
-          // Aspect ratio is not supported; allow upload but note it will be cropped
           console.warn("Aspect ratio not supported; image will be cropped.");
-          setCount((prevCount) => prevCount + 1); // Increment the count for valid upload
-          resolve(file); // Resolve the promise to allow upload
+          setCount((prevCount) => prevCount + 1);
+          resolve(file);
           return;
         }
 
@@ -112,14 +110,12 @@ const PostThread = () => {
           return;
         }
 
-        // If the width is between 320 and 1080 pixels, allow it to retain its original resolution
         if (img.width >= 320 && img.width < 1080) {
-          setCount((prevCount) => prevCount + 1); // Increment the count for valid upload
-          resolve(file); // Resolve to allow upload at original resolution
+          setCount((prevCount) => prevCount + 1);
+          resolve(file);
           return;
         }
 
-        // Check for original image validation (width >= 1080)
         if (img.width < 1080 || img.height < 1350) {
           reject(
             new Error(
@@ -129,8 +125,7 @@ const PostThread = () => {
           return;
         }
 
-        // If all conditions are met, resolve the file
-        setCount((prevCount) => prevCount + 1); // Increment the count for valid upload
+        setCount((prevCount) => prevCount + 1);
         resolve(file);
       };
 
@@ -139,43 +134,66 @@ const PostThread = () => {
     });
   };
 
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    for (const file of files) {
-      try {
-        await validateImage(file);
-        setImages((prevImages) => [...prevImages, file]);
-      } catch (error) {
-        toast.error(error.message, {
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+  const removeImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    setCount((prevCount) => prevCount - 1);
+  };
+
+  const openCamera = async () => {
+    setShowCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
       }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      toast.error("Unable to access camera. Please check permissions.");
     }
   };
 
-  const removeImage = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  const takeSelfie = () => {
+    if (canvasRef.current && videoRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext("2d");
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
+        setImages((prevImages) => [...prevImages, file]);
+        setCount((prevCount) => prevCount + 1);
+        closeCamera();
+      }, "image/jpeg");
+    }
+  };
+
+  const closeCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+    setShowCamera(false);
   };
 
   useEffect(() => {
     setIsValidInput(PostValidation(thread));
   }, [thread]);
 
-  const handleMenuItemClick = (expirationTime) => {
-    setExpirationTime(expirationTime);
-    console.log(expirationTime);
+  useEffect(() => {
+    const checkCanPost = async () => {
+      const { success, message, data } = await canPostAgainFunc(currentUserID);
+      setCanPostAgain(success);
+    };
 
-    form.handleSubmit(onSubmit)();
-  };
+    checkCanPost();
+  }, [currentUserID]);
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
+    if (!api) return;
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap() + 1);
 
@@ -183,6 +201,16 @@ const PostThread = () => {
       setCurrent(api.selectedScrollSnap() + 1);
     });
   }, [api]);
+
+  useEffect(() => {
+    return () => {
+      closeCamera();
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("showCamera state:", showCamera);
+  }, [showCamera]);
 
   return (
     <Form {...form}>
@@ -206,10 +234,7 @@ const PostThread = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => {
-                        removeImage(index);
-                        setCount((index) => index - 1);
-                      }}
+                      onClick={() => removeImage(index)}
                       className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-1 rounded-full"
                     >
                       <X size={16} />
@@ -246,58 +271,58 @@ const PostThread = () => {
         />
 
         <div className="flex items-center gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                className="bg-primary-500"
-                disabled={loading || !isValidInput}
-              >
-                {loading ? <span>Loading...</span> : "Post Content"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-indigo-500">
-              <DropdownMenuLabel className="text-white">
-                Select Post Duration:
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              {["24Hours", "12Hours", "5Hours", "1Hour", "30Mins"].map(
-                (time) => (
-                  <DropdownMenuItem
-                    key={time}
-                    className="hover:bg-indigo-600 cursor-pointer"
-                    onClick={() => handleMenuItemClick(time)}
-                  >
-                    <button
-                      type="button"
-                      className="cursor-pointer bg-transparent text-secondary-background text-fuchsia-50
-                      inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2"
-                      disabled={loading}
-                    >
-                      {time.replace(/([A-Z])/g, " $1")}
-                    </button>
-                  </DropdownMenuItem>
-                )
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <label
-            htmlFor="image-upload"
-            className="cursor-pointer bg-secondary text-secondary-foreground hover:bg-indigo-600 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
+          <Button
+            type="button"
+            className="bg-primary-500"
+            disabled={loading || !isValidInput || !canPostAgain}
+            onClick={() => form.handleSubmit(onSubmit)()}
+          >
+            {loading ? <span>Loading...</span> : "Post Content"}
+          </Button>
+          <Button
+            type="button"
+            className="bg-secondary text-secondary-foreground hover:bg-indigo-600"
+            onClick={openCamera}
           >
             <Camera className="mr-2 h-4 w-4" />
-            Add Portrait Image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageUpload}
-            className="hidden"
-            id="image-upload"
-          />
+            Take Selfie
+          </Button>
         </div>
+
+        <Dialog open={showCamera} onOpenChange={setShowCamera}>
+          <DialogContent className="sm:max-w-[500px] bg-gray-900 text-white border-none shadow-lg">
+            <DialogHeader className="border-b border-gray-700 pb-4">
+              <DialogTitle className="text-2xl font-bold text-center text-purple-400">
+                Capture Your Moment
+              </DialogTitle>
+            </DialogHeader>
+            <div className="relative w-full h-80 mt-4 rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
+              <Button
+                type="button"
+                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-all duration-300 ease-in-out flex items-center space-x-2"
+                onClick={takeSelfie}
+              >
+                <Camera className="h-5 w-5" />
+                <span>Capture</span>
+              </Button>
+            </div>
+            <Button
+              type="button"
+              className="absolute top-2 right-2 bg-transparent hover:bg-gray-800 text-gray-400 hover:text-white rounded-full p-2 transition-colors duration-200"
+              onClick={() => setShowCamera(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </DialogContent>
+        </Dialog>
+        <canvas ref={canvasRef} style={{ display: "none" }} />
       </form>
       <Toaster position="bottom-left" reverseOrder={false} />
     </Form>
