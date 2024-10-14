@@ -18,7 +18,8 @@ const LeftSidebar = ({ setCurrentView, currentView, notifications }) => {
 
       return () => anim.destroy();
     }
-  }, []);
+  }, [notifications]);
+
 
   return (
     <section className="custom-scrollbar leftsidebar">

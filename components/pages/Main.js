@@ -22,20 +22,20 @@ function Home() {
       setLoading(newOffset === 0);
       setLoadingMore(newOffset !== 0);
 
-      //await new Promise((resolve) => setTimeout(resolve, 3000));
-
       setIsLoading(false);
       try {
         const { success, message, data } = await getPosts(id, limit, newOffset);
 
         if (!success) {
-          setPosts([]);
+          setPosts([]); // Clear posts on failure
           toast.error(message || "Failed to load posts");
         } else {
+          // Prepend new posts to the existing ones
           setPosts((prevPosts) =>
-            newOffset === 0 ? data : [...prevPosts, ...data]
+            newOffset === 0 ? data : [...data, ...prevPosts]
           );
 
+          // Check if there are more posts to load
           if (data.length < limit) {
             setHasMorePosts(false);
             if (newOffset !== 0) {

@@ -276,6 +276,7 @@ function ThreadCard({
           id,
           content,
           author,
+          creator_id,
           createdAt,
           comments,
           isComment,

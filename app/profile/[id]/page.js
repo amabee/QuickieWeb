@@ -191,8 +191,8 @@ function Profile() {
               currentUserFollowers.map((follower) => (
                 <div className="mb-4">
                   <UserCard
-                    key={follower.user_id}
-                    id={follower.user_id}
+                    key={follower.follower_id}
+                    id={follower.follower_id}
                     name={`${follower.first_name} ${follower.last_name}`}
                     username={follower.username}
                     imgUrl={user_image_path + follower.profile_image}

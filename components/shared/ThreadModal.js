@@ -34,6 +34,8 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
 
     setIsSending(true);
 
+    
+
     if (replyingTo) {
       await handleReplyMessage(replyingToCommentId);
     } else {
@@ -59,8 +61,13 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
           post_id: post.id,
           user_id: userID.user_id,
           content: comment,
+          target_id: post.creator_id,
         })
       );
+
+      formData.forEach((value, key) => {
+        console.log(key, value);
+      });
 
       const { success, message, data } = await sendComment({ formData });
 
@@ -70,6 +77,7 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
           prevComments.filter((c) => c.id !== newComment.id)
         );
       } else {
+        console.log(message);
         setComments((prevComments) =>
           prevComments.map((c) =>
             c.id === newComment.id ? { ...c, isSending: false, ...data } : c
@@ -101,6 +109,7 @@ const ThreadModal = ({ post, isOpen, onClose }) => {
   };
 
   useEffect(() => {
+    console.log(post);
     getCommentsByPOST();
   }, []);
 
