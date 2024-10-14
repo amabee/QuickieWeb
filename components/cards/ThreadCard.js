@@ -21,6 +21,7 @@ const post_images_path = process.env.NEXT_PUBLIC_POST_IMAGES_ENDPOINT;
 function ThreadCard({
   id,
   currentUserId,
+  creator_id,
   content,
   author,
   createdAt,
@@ -53,6 +54,7 @@ function ThreadCard({
       JSON.stringify({
         user_id: currentUserId,
         post_id: id,
+        target_id: creator_id,
       })
     );
     const { success, message, data } = await likePost({ formData });

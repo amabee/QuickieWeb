@@ -189,13 +189,16 @@ function Profile() {
               <p>Loading followers...</p>
             ) : (
               currentUserFollowers.map((follower) => (
-                <UserCard
-                  key={follower.user_id}
-                  id={follower.user_id}
-                  name={`${follower.first_name} ${follower.last_name}`}
-                  username={follower.username}
-                  imgUrl={user_image_path + follower.profile_image}
-                />
+                <div className="mb-4">
+                  <UserCard
+                    key={follower.user_id}
+                    id={follower.user_id}
+                    name={`${follower.first_name} ${follower.last_name}`}
+                    username={follower.username}
+                    imgUrl={user_image_path + follower.profile_image}
+                    isFollowing={follower.is_following_back}
+                  />
+                </div>
               ))
             )}
           </TabsContent>

@@ -121,6 +121,7 @@ function Home() {
                   key={post.post_id}
                   id={post.post_id}
                   currentUserId={id}
+                  creator_id={post.user_id}
                   creator_image={post.profile_image}
                   content={post.content}
                   author={post.first_name + " " + post.last_name}

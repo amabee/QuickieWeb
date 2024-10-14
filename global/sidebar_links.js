@@ -13,17 +13,23 @@ export const sidebarLinks = [
     imgURL: "/assets/heart.svg",
     route: "/activity",
     label: "Activity",
+    notificationKey: "activity",
   },
   {
     imgURL: "/assets/create.svg",
     route: "/create-thread",
     label: "QuickSnap",
   },
-
   {
     imgURL: "/assets/user.svg",
     route: "/profile",
     label: "Profile",
+  },
+
+  {
+    imgURL: "/assets/logout.svg",
+    route: "/",
+    label: "Logout",
   },
 ];
 
