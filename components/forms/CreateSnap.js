@@ -108,6 +108,9 @@ const PostThread = () => {
       setThread("");
       setImages([]);
       setCanPostAgain(false);
+      localStorage.removeItem("postTimerLimit");
+      setTimeLeft("");
+      setTimeLeftFormatted("");
       toast.success(
         typeof message === "string" ? message : "Post submitted successfully!"
       );
@@ -170,8 +173,12 @@ const PostThread = () => {
 
   useEffect(() => {
     const checkCanPost = async () => {
-      const { success } = await canPostAgainFunc(currentUserID.user_id);
+      const { success, message } = await canPostAgainFunc(
+        currentUserID.user_id
+      );
       setCanPostAgain(success);
+
+      console.log("Can Post? ", message);
     };
     checkCanPost();
 
@@ -185,9 +192,8 @@ const PostThread = () => {
         setTimeLeft(Math.floor(postTimerLimitDuration / 1000));
       }
 
-      // Start the timer if canPostAgain is true
       const timer = setInterval(() => {
-        const now = Date.now(); // Move this inside the interval
+        const now = Date.now();
         const cooldownEnd = parseInt(
           localStorage.getItem("postTimerLimit"),
           10
