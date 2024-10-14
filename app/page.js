@@ -10,7 +10,6 @@ import Search from "@/components/pages/SearchPage";
 import Activity from "@/components/pages/Activities";
 import Profile from "./profile/[id]/page";
 import QuickSnap from "@/components/pages/QuickSnap";
-
 import Home from "@/components/pages/Main";
 import { getNotifs } from "@/lib/actions/users";
 import { useUser } from "@/lib/UserContext";
@@ -18,17 +17,31 @@ import { logout } from "@/lib/lib";
 
 const Page = () => {
   const currentUserID = useUser();
-  const id = currentUserID?.user_id ?? null;
-
+  const [id, setId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentView, setCurrentView] = useState("Home");
+  const [hasNotifications, setHasNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    if (id !== null) {
-      getNotifications();
-    } else {
-      console.log("?");
+    if (currentUserID?.user_id) {
+      setId(currentUserID.user_id);
+      setIsLoading(false);
     }
+  }, [currentUserID]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (id !== null) {
+        await getNotifications();
+      }
+    };
+
+    fetchNotifications();
+
+    const interval = setInterval(fetchNotifications, 2500);
+
+    return () => clearInterval(interval);
   }, [id]);
 
   const getNotifications = async () => {
@@ -36,21 +49,16 @@ const Page = () => {
 
     if (!success) {
       console.log("Error? ", message);
+      setNotifications([]);
+      setHasNotifications(false);
+    } else {
+      setNotifications(data);
+
+      const hasUnreadNotifications = data.some(
+        (notification) => notification.is_read === 0
+      );
+      setHasNotifications(hasUnreadNotifications);
     }
-
-    console.log("Hmmkay");
-    setNotifications(data);
-  };
-
-  const logCookies = () => {
-    console.log(document.cookie); // Log the current cookies
-  };
-
-  const deleteSessionCookie = () => {
-    logCookies(); // Log cookies before deletion
-    document.cookie =
-      "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    logCookies();
   };
 
   const renderMainContent = () => {
@@ -67,11 +75,15 @@ const Page = () => {
         return <QuickSnap />;
       case "Logout":
         return logout();
-
       default:
         return <Home />;
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       <Topbar />
@@ -79,7 +91,7 @@ const Page = () => {
         <LeftSidebar
           setCurrentView={setCurrentView}
           currentView={currentView}
-          notifications={{ activity: true }}
+          notifications={{ activity: hasNotifications }}
         />
         <section className="main-container">
           <div className="w-full max-w-4xl">{renderMainContent()}</div>
