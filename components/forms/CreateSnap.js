@@ -28,7 +28,7 @@ import { toast, Toaster } from "react-hot-toast";
 import { useUser } from "@/lib/UserContext";
 import { createPost } from "@/lib/actions/posts";
 import { PostValidation } from "@/lib/helper";
-import { canPostAgainFunc } from "@/lib/actions/users";
+import { canPostAgainFunc, updatePostCoolDown } from "@/lib/actions/users";
 
 const PostThread = () => {
   const [images, setImages] = useState([]);
@@ -40,6 +40,8 @@ const PostThread = () => {
   const [isValidInput, setIsValidInput] = useState(false);
   const [canPostAgain, setCanPostAgain] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLeftFormatted, setTimeLeftFormatted] = useState("");
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -52,6 +54,31 @@ const PostThread = () => {
       accountId: currentUserID,
     },
   });
+
+  const updateCooldown = async () => {
+    const formData = new FormData();
+    formData.append("operation", "updatePostTime");
+    formData.append(
+      "json",
+      JSON.stringify({
+        user_id: currentUserID.user_id,
+      })
+    );
+
+    try {
+      const { success, message, data } = await updatePostCoolDown({ formData });
+
+      if (!success) {
+        return toast.error(
+          typeof message === "string" ? message : JSON.stringify(message)
+        );
+      }
+
+      toast.success("Cooldown baby");
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
 
   const onSubmit = async () => {
     const formData = new FormData();
@@ -80,6 +107,7 @@ const PostThread = () => {
 
       setThread("");
       setImages([]);
+      setCanPostAgain(false);
       toast.success(
         typeof message === "string" ? message : "Post submitted successfully!"
       );
@@ -89,49 +117,6 @@ const PostThread = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const validateImage = (file) => {
-    return new Promise((resolve, reject) => {
-      const img = new window.Image();
-
-      img.onload = () => {
-        const aspectRatio = img.width / img.height;
-
-        if (aspectRatio < 1.91 / 1 || aspectRatio > 4 / 5) {
-          console.warn("Aspect ratio not supported; image will be cropped.");
-          setCount((prevCount) => prevCount + 1);
-          resolve(file);
-          return;
-        }
-
-        if (img.width < 320) {
-          reject(new Error("Image width must be at least 320 pixels."));
-          return;
-        }
-
-        if (img.width >= 320 && img.width < 1080) {
-          setCount((prevCount) => prevCount + 1);
-          resolve(file);
-          return;
-        }
-
-        if (img.width < 1080 || img.height < 1350) {
-          reject(
-            new Error(
-              "Image must be at least 1080 pixels wide and 1350 pixels tall."
-            )
-          );
-          return;
-        }
-
-        setCount((prevCount) => prevCount + 1);
-        resolve(file);
-      };
-
-      img.onerror = () => reject(new Error("Invalid image file"));
-      img.src = URL.createObjectURL(file);
-    });
   };
 
   const removeImage = (index) => {
@@ -185,12 +170,64 @@ const PostThread = () => {
 
   useEffect(() => {
     const checkCanPost = async () => {
-      const { success, message, data } = await canPostAgainFunc(currentUserID);
+      const { success } = await canPostAgainFunc(currentUserID.user_id);
       setCanPostAgain(success);
     };
-
     checkCanPost();
-  }, [currentUserID]);
+
+    const storedCooldown = localStorage.getItem("postTimerLimit");
+    const postTimerLimitDuration = 3 * 60 * 1000;
+
+    if (canPostAgain) {
+      if (!storedCooldown) {
+        const postTimerLimit = Date.now() + postTimerLimitDuration;
+        localStorage.setItem("postTimerLimit", postTimerLimit.toString());
+        setTimeLeft(Math.floor(postTimerLimitDuration / 1000));
+      }
+
+      // Start the timer if canPostAgain is true
+      const timer = setInterval(() => {
+        const now = Date.now(); // Move this inside the interval
+        const cooldownEnd = parseInt(
+          localStorage.getItem("postTimerLimit"),
+          10
+        );
+
+        if (now < cooldownEnd) {
+          const remainingTime = Math.floor((cooldownEnd - now) / 1000);
+          setTimeLeft(remainingTime);
+          const minutes = Math.floor(remainingTime / 60);
+          const seconds = remainingTime % 60;
+          setTimeLeftFormatted(`${minutes}m ${seconds}s`);
+        } else {
+          clearInterval(timer);
+          localStorage.removeItem("postTimerLimit");
+          updateCooldown();
+          setCanPostAgain(false);
+          setTimeLeft(0);
+          setTimeLeftFormatted("");
+        }
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      if (storedCooldown) {
+        const postTimerLimitEnd = parseInt(storedCooldown, 10);
+        const now = Date.now();
+        if (now < postTimerLimitEnd) {
+          const remainingTime = Math.max(0, postTimerLimitEnd - now);
+          setTimeLeft(Math.floor(remainingTime / 1000));
+          const minutes = Math.floor(remainingTime / 60000);
+          const seconds = Math.floor((remainingTime % 60000) / 1000);
+          setTimeLeftFormatted(`${minutes}m ${seconds}s`);
+        } else {
+          setCanPostAgain(true);
+          localStorage.removeItem("postTimerLimit");
+          setTimeLeftFormatted("");
+        }
+      }
+    }
+  }, [currentUserID, canPostAgain]);
 
   useEffect(() => {
     if (!api) return;
@@ -207,10 +244,6 @@ const PostThread = () => {
       closeCamera();
     };
   }, []);
-
-  useEffect(() => {
-    console.log("showCamera state:", showCamera);
-  }, [showCamera]);
 
   return (
     <Form {...form}>
@@ -277,7 +310,11 @@ const PostThread = () => {
             disabled={loading || !isValidInput || !canPostAgain}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            {loading ? <span>Loading...</span> : "Post Content"}
+            {loading ? (
+              <span>Loading...</span>
+            ) : (
+              `Post Content (${timeLeftFormatted})`
+            )}
           </Button>
           <Button
             type="button"
@@ -289,40 +326,26 @@ const PostThread = () => {
           </Button>
         </div>
 
-        <Dialog open={showCamera} onOpenChange={setShowCamera}>
-          <DialogContent className="sm:max-w-[500px] bg-gray-900 text-white border-none shadow-lg">
-            <DialogHeader className="border-b border-gray-700 pb-4">
-              <DialogTitle className="text-2xl font-bold text-center text-purple-400">
-                Capture Your Moment
-              </DialogTitle>
-            </DialogHeader>
-            <div className="relative w-full h-80 mt-4 rounded-lg overflow-hidden">
+        {showCamera && (
+          <Dialog open={showCamera} onOpenChange={closeCamera}>
+            <DialogContent className="flex flex-col items-center">
+              <DialogHeader>
+                <DialogTitle>Camera</DialogTitle>
+              </DialogHeader>
               <video
                 ref={videoRef}
                 autoPlay
-                playsInline
-                className="w-full h-full object-cover"
+                className="border border-gray-400 rounded-lg mb-4"
+                style={{ width: "300px", height: "375px" }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
-              <Button
-                type="button"
-                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-all duration-300 ease-in-out flex items-center space-x-2"
-                onClick={takeSelfie}
-              >
-                <Camera className="h-5 w-5" />
-                <span>Capture</span>
+              <Button onClick={takeSelfie}>Capture</Button>
+              <Button type="button" onClick={closeCamera}>
+                Close
               </Button>
-            </div>
-            <Button
-              type="button"
-              className="absolute top-2 right-2 bg-transparent hover:bg-gray-800 text-gray-400 hover:text-white rounded-full p-2 transition-colors duration-200"
-              onClick={() => setShowCamera(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </DialogContent>
-        </Dialog>
-        <canvas ref={canvasRef} style={{ display: "none" }} />
+              <canvas ref={canvasRef} style={{ display: "none" }} />
+            </DialogContent>
+          </Dialog>
+        )}
       </form>
       <Toaster position="bottom-left" reverseOrder={false} />
     </Form>
