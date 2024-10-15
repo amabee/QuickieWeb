@@ -9,7 +9,7 @@ function Topbar() {
         <p className="text-heading3-bold text-light-1 ">Quickie</p>
       </Link>
 
-      <div className="flex items-center gap-1">
+      {/* <div className="flex items-center gap-1">
         <div className="block md:hidden">
           <div className="flex cursor-pointer">
             <Image
@@ -20,7 +20,7 @@ function Topbar() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
     </nav>
   );
 }

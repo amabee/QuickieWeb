@@ -14,6 +14,7 @@ import Home from "@/components/pages/Main";
 import { getNotifs } from "@/lib/actions/users";
 import { useUser } from "@/lib/UserContext";
 import { logout } from "@/lib/lib";
+import LoadingScreen from "@/components/shared/preLoader";
 
 const Page = () => {
   const currentUserID = useUser();
@@ -23,10 +24,24 @@ const Page = () => {
   const [hasNotifications, setHasNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
+  // useEffect(() => {
+  //   if (currentUserID?.user_id) {
+  //     setId(currentUserID.user_id);
+
+  //     setIsLoading(false);
+  //   }
+  // }, [currentUserID]);
+
   useEffect(() => {
     if (currentUserID?.user_id) {
-      setId(currentUserID.user_id);
-      setIsLoading(false);
+      const timeoutId = setTimeout(() => {
+        setId(currentUserID.user_id);
+        setIsLoading(false);
+      }, 5000);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setIsLoading(true);
     }
   }, [currentUserID]);
 
@@ -81,7 +96,7 @@ const Page = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   return (
@@ -98,7 +113,10 @@ const Page = () => {
         </section>
         <RightSidebar />
       </main>
-      <Bottombar setCurrentView={setCurrentView} />
+      <Bottombar
+        setCurrentView={setCurrentView}
+        notifications={{ activity: hasNotifications }}
+      />
     </div>
   );
 };
